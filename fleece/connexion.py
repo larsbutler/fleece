@@ -223,5 +223,6 @@ def call_api(event, app_name, app_swagger_path, logger, strict_validation=True,
         strict_validation=strict_validation,
         validate_responses=validate_responses,
         cache_app=cache_app,
+        logger=logger,
     )
     return app.call_api(event)
