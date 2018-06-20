@@ -44,7 +44,9 @@ def parse_args(args):
                               'lambda_function.zip (default: '
                               '$service_dir/src)'))
     parser.add_argument('--exclude', '-e', type=str, nargs='+',
-                        help='glob pattern to exclude')
+                        help='glob patterns for files to exclude')
+    parser.add_argument('--include', '-i', type=str, nargs='+',
+                        help='glob patterns for files to include')
     parser.add_argument('service_dir', type=str,
                         help=('directory where the service is located '
                               '(default: $pwd)'))
@@ -247,6 +249,12 @@ def _build_with_pipenv(service_name, python_version, src_dir, pipfile,
 
 def _build(service_name, python_version, src_dir, requirements_path,
            dependencies, rebuild, exclude, dist_dir):
+    """
+    :param service_name:
+    :param python_version:
+    :param src_dir:
+        --source directory specified from the command line.
+    """
     print('Building {} with {}...'.format(service_name, python_version))
 
     try:
@@ -292,6 +300,7 @@ def _build(service_name, python_version, src_dir, requirements_path,
     put_files(src, requirements_path, '/requirements',
               single_file_name='requirements.txt')
 
+    import pdb; pdb.set_trace()
     # Run Builder
     container = docker_api.containers.run(
         image=image.tags[0],
@@ -303,6 +312,7 @@ def _build(service_name, python_version, src_dir, requirements_path,
                          ['"{}"'.format(e) for e in exclude or []])},
         volumes_from=[src.id, build_cache.id],
         detach=True)
+
     for line in container.logs(stream=True, follow=True):
         sys.stdout.write(line.decode('utf-8'))
     exit_code = container.wait()
